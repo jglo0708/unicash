@@ -1,0 +1,73 @@
+// SPDX-License-Identifier: UNLICENSED
+
+pragma solidity ^0.6.0;
+
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/access/Ownable.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/math/SafeMath.sol";
+import "StoreCharity.sol";
+
+contract TokenUni {
+    address owner;
+    address payable uni_address;
+    address payable store_address;
+    bool public met_criteria = false ;
+    bool public chosen = false ;
+
+    mapping(address=>uint256) public donations_to_this_contract; //ogni donor è mappato
+
+
+    using SafeMath for uint;
+
+    constructor(address payable _uni_address,
+    string memory _description, address payable _store_address) public { 
+        owner = msg.sender;
+        uni_address = _uni_address;
+        store_address = _store_address;
+        StoreCharity(address (_store_address)).NewContract(msg.sender,_uni_address,
+                                        _description);
+    }
+
+    function validate() external {
+        //require only uni to do it
+        require(msg.sender == uni_address, "Only Uni can validate");
+        met_criteria = true;
+        StoreCharity(address (store_address)).StoreValidation();
+
+    }
+
+    function Donate(uint256 _value) payable public{
+        //require donor in donors_store in the big;
+        require(met_criteria == true, "Uni has yet to validate this token");
+        require(msg.value > 0 wei, "You cannot donate 0");
+        require(msg.sender.balance >= msg.value);
+        require(msg.value == _value, "values do not match");
+        donations_to_this_contract[msg.sender] += msg.value;
+        StoreCharity(address (store_address)).StoreDonation(_value);
+        
+    }
+
+    function chooseThisUni() public {
+        require(met_criteria==true, "Uni did not verify the contract yet");
+        require(msg.sender == owner, "Only the student can decide");
+        chosen = true;
+        //CALLS THE UNI AND SAYS THAT HE CHOSE
+    }
+
+    function withdraw() external {
+        //transfer all the amount minus the fees to the student
+        require(chosen==true, "Student did not chose this uni yet");
+        uint256 _amount = address(this).balance;
+        (bool success, ) = uni_address.call{value : _amount}("");
+        require(success, "External Transfer Failed");
+        //_destroyToken();
+    }
+
+    function _destroyToken() private {
+        selfdestruct(payable(uni_address)); 
+    }
+
+    function checkContractBalance() public view returns(uint) {
+        return address(this).balance;
+    }
+
+}
