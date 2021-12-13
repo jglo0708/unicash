@@ -3,7 +3,7 @@ pragma solidity ^0.6.0;
 
 import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/access/Ownable.sol";
 import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/math/SafeMath.sol";
-import "contracts/TokenUni.sol";
+import "./TokenUni.sol";
 
 // import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 // import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";

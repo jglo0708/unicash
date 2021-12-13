@@ -4,7 +4,7 @@ pragma solidity ^0.6.0;
 
 import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/access/Ownable.sol";
 import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/math/SafeMath.sol";
-import "contracts/StoreCharity.sol";
+import "./StoreCharity.sol";
 
 contract TokenUni {
     address owner;

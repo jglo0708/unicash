@@ -13,7 +13,6 @@ import argparse
 
 def create_student_token(owner, uni_address, store, description):
     student_token = TokenUni.deploy(uni_address, description, store, {"from": owner})
-    #
     # if update_front_end_flag:
     # update_front_end()
     return student_token
@@ -21,12 +20,10 @@ def create_student_token(owner, uni_address, store, description):
 
 def main():
     # parser = argparse.ArgumentParser(description='Add a Student Coin')
-
     # parser.add_argument('--student')
     # parser.add_argument('--uni',)
     # parser.add_argument('--description',)
     # parser.add_argument('--store_address',)
-
     # args = parser.parse_args()
 
     student = get_account(1)
