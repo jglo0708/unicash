@@ -2,19 +2,21 @@
 
 pragma solidity ^0.6.0;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/access/Ownable.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/math/SafeMath.sol";
-import "StoreCharity.sol";
+import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/access/Ownable.sol";
+import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/math/SafeMath.sol";
+import "contracts/StoreCharity.sol";
+
+
 
 contract TokenUni {
     address owner;
     address payable uni_address;
     address payable store_address;
-    bool public met_criteria = false ;
-    bool public chosen = false ;
+    bool public met_criteria = false;
+    bool public chosen = false;
 
-    mapping(address=>uint256) public donations_to_this_contract; //ogni donor è mappato
-
+    mapping(address=>uint256) public donations_to_this_contract; //mapping from donor to donation amount
+    address[] public listOfDonors;
 
     using SafeMath for uint;
 
@@ -42,6 +44,7 @@ contract TokenUni {
         require(msg.sender.balance >= msg.value);
         require(msg.value == _value, "values do not match");
         donations_to_this_contract[msg.sender] += msg.value;
+        listOfDonors.push(msg.sender);
         StoreCharity(address (store_address)).StoreDonation(_value);
         
     }
@@ -50,20 +53,28 @@ contract TokenUni {
         require(met_criteria==true, "Uni did not verify the contract yet");
         require(msg.sender == owner, "Only the student can decide");
         chosen = true;
-        //CALLS THE UNI AND SAYS THAT HE CHOSE
+        StoreCharity(address (store_address)).StoreChoices(msg.sender);
     }
 
     function withdraw() external {
-        //transfer all the amount minus the fees to the student
         require(chosen==true, "Student did not chose this uni yet");
         uint256 _amount = address(this).balance;
         (bool success, ) = uni_address.call{value : _amount}("");
         require(success, "External Transfer Failed");
-        //_destroyToken();
+        _destroyToken();
     }
 
     function _destroyToken() private {
-        selfdestruct(payable(uni_address)); 
+        selfdestruct(payable(uni_address));
+    }
+
+    function _sendBackMoney() external {
+        for (uint i=0; i<listOfDonors.length; i++) {
+            address payable to = payable(listOfDonors[i]);
+            (bool success, ) = to.call{value : donations_to_this_contract[to]}("");
+            require(success, "External Transfer Failed");
+        }
+        _destroyToken();
     }
 
     function checkContractBalance() public view returns(uint) {

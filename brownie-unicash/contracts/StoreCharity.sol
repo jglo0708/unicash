@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.6.0;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/access/Ownable.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/math/SafeMath.sol";
-import "DomCharity.sol";
+import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/access/Ownable.sol";
+import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/math/SafeMath.sol";
+import "contracts/UniToken.sol";
+// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+// import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
 contract StoreCharity {
     address owner; //owner of the address (not particulary useful at the moment)
