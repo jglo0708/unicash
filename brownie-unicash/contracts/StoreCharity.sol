@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.6.0;
+pragma solidity ^0.6.6;
 
-import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/access/Ownable.sol";
-import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./TokenUni.sol";
 
 // import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
