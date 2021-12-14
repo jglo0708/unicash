@@ -1,118 +1,82 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+
+pragma solidity ^0.6.0;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/access/Ownable.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/math/SafeMath.sol";
+import "StoreCharity.sol";
 
-import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
-import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/vendor/SafeMathChainlink.sol";
+contract TokenUni {
+    address owner;
+    address payable uni_address;
+    address payable store_address;
+    bool public met_criteria = false;
+    bool public chosen = false;
 
-import "./StoreCharity.sol";
+    mapping(address=>uint256) public donations_to_this_contract; //mapping from donor to donation amount
+    address[] public listOfDonors;
 
-// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-// import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+    using SafeMath for uint;
 
-contract StoreCharity {
-    address owner; //owner of the address (not particulary useful at the moment)
-    uint256 public contracts = 0; //number of users (students issuing CharityToken)
-    mapping(address => bool) public contracts_validated; //which contracts have been validated by unis
-    mapping(address => mapping(address => uint256)) donations_per_contracts;
-    mapping(address => Contract) public contracts_store; //address is a contract address (because 1 student can have more than 1 address
-    mapping(address => address[]) private _store_repayment; //mapping from student to his/her contacts which map to a bool telling if chosen
-    address[] private _listOfDonors;
-    address[] private _listOfUnis;
-    address[] private _listOfContracts;
-
-    struct Contract {
-        address payable student_address;
-        address payable uni_address;
-        string description;
+    constructor(address payable _uni_address,
+    string memory _description, address payable _store_address) public { 
+        owner = msg.sender;
+        uni_address = _uni_address;
+        store_address = _store_address;
+        StoreCharity(address (_store_address)).NewContract(msg.sender,_uni_address,
+                                        _description);
     }
 
-    mapping(address => Donor) public donors_store;
-    uint256 public donors = 0;
-    uint256 initial_CharityTokens_donated = 0;
+    function validate() external {
+        //require only uni to do it
+        require(msg.sender == uni_address, "Only Uni can validate");
+        met_criteria = true;
+        StoreCharity(address (store_address)).StoreValidation();
 
-    struct Donor {
-        //student class
-        string description; //"I am This Guy" / "This company"
-        uint256 charity_token_donated; //tokens issued
     }
 
-    mapping(address => University) public uni_store;
-    uint256 public universities = 0;
-
-    struct University {
-        string uni_name;
+    function Donate(uint256 _value) payable public{
+        //require donor in donors_store in the big;
+        require(met_criteria == true, "Uni has yet to validate this token");
+        require(msg.value > 0 wei, "You cannot donate 0");
+        require(msg.sender.balance >= msg.value);
+        require(msg.value == _value, "values do not match");
+        donations_to_this_contract[msg.sender] += msg.value;
+        listOfDonors.push(msg.sender);
+        StoreCharity(address (store_address)).StoreDonation(_value);
+        
     }
 
-    using SafeMath for uint256;
-
-    constructor() public {
-        owner = msg.sender; //the guy who create the ontract becames the owner
+    function chooseThisUni() public {
+        require(met_criteria==true, "Uni did not verify the contract yet");
+        require(msg.sender == owner, "Only the student can decide");
+        chosen = true;
+        StoreCharity(address (store_address)).StoreChoices(msg.sender);
     }
 
-    function NewContract(
-        address payable _student_address,
-        address payable _uni_address,
-        string memory _description
-    ) external {
-        //function to add a student
-        uint256 _inside = 0;
-        for (uint256 i = 0; i < _listOfUnis.length; i++) {
-            if (_listOfUnis[i] == _uni_address) {
-                _inside += 1;
-            } else {
-                _inside += 0;
-            }
+    function withdraw() external {
+        require(chosen==true, "Student did not chose this uni yet");
+        uint256 _amount = address(this).balance;
+        (bool success, ) = uni_address.call{value : _amount}("");
+        require(success, "External Transfer Failed");
+        _destroyToken();
+    }
+
+    function _destroyToken() private {
+        selfdestruct(payable(uni_address));
+    }
+
+    function _sendBackMoney() external {
+        for (uint i=0; i<listOfDonors.length; i++) {
+            address payable to = payable(listOfDonors[i]);
+            (bool success, ) = to.call{value : donations_to_this_contract[to]}("");
+            require(success, "External Transfer Failed");
         }
-        require(_inside == 1, "Uni not in the database");
-
-        contracts++; //increase the number of users
-        contracts_store[msg.sender] = Contract(
-            _student_address,
-            _uni_address,
-            _description
-        ); //initialize the contract
-        _listOfContracts.push(msg.sender);
-        _store_repayment[_student_address].push(msg.sender);
+        _destroyToken();
     }
 
-    function NewDonor(string memory _description) public {
-        donors++; //increase the number of users
-        donors_store[msg.sender] = Donor(
-            _description,
-            initial_CharityTokens_donated
-        ); //initialize the Donor
-        _listOfDonors.push(msg.sender);
-    }
-
-    function NewUni(string memory _uni_name) public {
-        universities++;
-        uni_store[msg.sender] = University(_uni_name);
-        _listOfUnis.push(msg.sender);
-    }
-
-    function StoreValidation() external {
-        contracts_validated[msg.sender] = true;
-    }
-
-    function StoreDonation(uint256 _value) external {
-        donations_per_contracts[tx.origin][msg.sender] += _value;
-        donors_store[tx.origin].charity_token_donated += _value;
-    }
-
-    function StoreChoices(address _student_address) external {
-        if (_store_repayment[_student_address].length == 1) {} else {
-            for (uint i=0; i<_store_repayment[_student_address].length; i++) {
-                if (TokenUni(address (_store_repayment[_student_address][i])).chosen() == false) {
-                    TokenUni(address (_store_repayment[_student_address][i]))._sendBackMoney();
-                } else {}
-            }
-        }
-    }
-
-    function checkContractBalance() public view returns (uint256) {
+    function checkContractBalance() public view returns(uint) {
         return address(this).balance;
     }
+
 }
