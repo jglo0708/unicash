@@ -75,14 +75,14 @@ contract TokenUni {
         selfdestruct(payable(uni_address));
     }
 
-    function getSumTransferedUsd () public returns (uint256) {
-        return getConversionRate(sum_transfered)
+    function getSumTransferedUsd() public returns (uint256) {
+        return getConversionRate(sum_transfered);
     }
 
     function _sendBackMoney() external {
         for (uint256 i = 0; i < listOfDonors.length; i++) {
             address payable to = payable(listOfDonors[i]);
-            sum_transfered+=donations_to_this_contract[to];
+            sum_transfered += donations_to_this_contract[to];
             (bool success, ) = to.call{value: donations_to_this_contract[to]}(
                 ""
             );
@@ -91,19 +91,27 @@ contract TokenUni {
         _destroyToken();
     }
 
-    function getVersion() public view returns (uint256){
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(0x8A753747A1Fa494EC906cE90E9f37563A8AF630e);
+    function getVersion() public view returns (uint256) {
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(
+            0x8A753747A1Fa494EC906cE90E9f37563A8AF630e
+        );
         return priceFeed.version();
     }
-    
-    function getPrice() public view returns(uint256){
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(0x8A753747A1Fa494EC906cE90E9f37563A8AF630e);
-        (,int256 answer,,,) = priceFeed.latestRoundData();
-         return uint256(answer * 10000000000);
+
+    function getPrice() public view returns (uint256) {
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(
+            0x8A753747A1Fa494EC906cE90E9f37563A8AF630e
+        );
+        (, int256 answer, , , ) = priceFeed.latestRoundData();
+        return uint256(answer * 10000000000);
     }
-    
+
     // 1000000000
-    function getConversionRate(uint256 ethAmount) public view returns (uint256){
+    function getConversionRate(uint256 ethAmount)
+        public
+        view
+        returns (uint256)
+    {
         uint256 ethPrice = getPrice();
         uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1000000000000000000;
         return ethAmountInUsd;
