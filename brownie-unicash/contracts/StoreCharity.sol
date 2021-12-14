@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.6.6;
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./TokenUni.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/access/Ownable.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/math/SafeMath.sol";
+
+import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
+import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/vendor/SafeMathChainlink.sol";
+
+import "./DomCharity.sol";
 
 // import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 // import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
@@ -99,18 +103,12 @@ contract StoreCharity {
     }
 
     function StoreChoices(address _student_address) external {
-        for (
-            uint256 i = 0;
-            i < _store_repayment[_student_address].length;
-            i++
-        ) {
-            if (
-                TokenUni(address(_store_repayment[_student_address][i]))
-                    .chosen() == false
-            ) {
-                TokenUni(address(_store_repayment[_student_address][i]))
-                    ._sendBackMoney();
-            } else {}
+        if (_store_repayment[_student_address].length == 1) {} else {
+            for (uint i=0; i<_store_repayment[_student_address].length; i++) {
+                if (TokenUni(address (_store_repayment[_student_address][i])).chosen() == false) {
+                    TokenUni(address (_store_repayment[_student_address][i]))._sendBackMoney();
+                } else {}
+            }
         }
     }
 
