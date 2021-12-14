@@ -10,12 +10,15 @@ import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src
 
 import "./StoreCharity.sol";
 
+
 contract TokenUni {
     address owner;
     address payable uni_address;
     address payable store_address;
     bool public met_criteria = false;
     bool public chosen = false;
+    
+    AggregatorV3Interface internal priceFeed;
 
     mapping(address => uint256) public donations_to_this_contract; //mapping from donor to donation amount
     address[] public listOfDonors;
@@ -26,7 +29,9 @@ contract TokenUni {
         address payable _uni_address,
         string memory _description,
         address payable _store_address
-    ) public {
+        
+    ) {
+        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
         owner = msg.sender;
         uni_address = _uni_address;
         store_address = _store_address;
@@ -84,17 +89,24 @@ contract TokenUni {
     }
 
     
-    function _getPrice() private view returns(uint256){
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(0x8A753747A1Fa494EC906cE90E9f37563A8AF630e);
-        (,int256 answer,,,) = priceFeed.latestRoundData();
-        return uint256(answer);
+function getPrice() public view returns (int) {
+        //(,int256 price,,,) = priceFeed.latestRoundData();
+        //return uint256(price);
+        (
+            uint80 roundID, 
+            int price,
+            uint startedAt,
+            uint timeStamp,
+            uint80 answeredInRound
+        ) = priceFeed.latestRoundData();
+        return price;
     }
     
-    // 1000000000
+    
     function getConversionRate(uint256 _amount) public view returns (uint256){
         uint256 _newInput = _amount * 10 ** 8;
-        uint256 ethAmountInUsd = _newInput / _getPrice();
-        return ethAmountInUsd;
+        //uint256 ethAmountInUsd = _newInput / getPrice();
+        return _newInput;//ethAmountInUsd;
     }
 
     function checkContractBalance() public view returns (uint256) {
