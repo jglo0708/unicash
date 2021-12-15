@@ -15,12 +15,12 @@ class App extends Component {
     this.setState({ account: accounts[0] })
     const storeCharity = new web3.eth.Contract(STORE_CHARITY, STORE_CHARITY_ADDRESS)
     this.setState({ storeCharity })
-    const contractsStore = storeCharity.methods.contracts_store().call()
-    this.setState({ contractsStore })
-    const uniStore = storeCharity.methods.uni_store().call()
-    this.setState({ uniStore })
-    const donorStore = storeCharity.methods.donors_store().call()
-    this.setState({ donorStore })
+    // const contractsStore = storeCharity.methods.contracts_store().call()
+    // this.setState({ contractsStore })
+    // const uniStore = storeCharity.methods.uni_store().call()
+    // this.setState({ uniStore })
+    // const donorStore = storeCharity.methods.donors_store().call()
+    // this.setState({ donorStore })
     }
 
 
@@ -30,13 +30,17 @@ class App extends Component {
   }
 
   render() {
+    const data =[{"name":"test1"},{"name":"test2"}];
     return (
       <div className="container">
         <h1>Hello, World!</h1>
         <p>Your account: {this.state.account}</p>
-      </div>
-    );
-  }
+        {data.map(function(d, idx){
+           return (<li key={idx}>{d.name}</li>)
+          })}
+          </div>
+        );
+      }
 }
 
 export default App;
