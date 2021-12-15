@@ -11,15 +11,14 @@ import eth_utils
 LOCAL_BLOCKCHAIN_ENVIRONMENTS = ["development", "ganache"]
 
 
-
-def get_account(ind, index=None, id=None):
+def get_account(index, id=None):
     if index:
         return accounts[index]
-    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
-        return accounts[ind]
-    if id:
-        return accounts.load(id)
-    return accounts.add(config["wallets"]["from_key"])
+    # if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+    #     return accounts[]
+    # if id:
+    #     return accounts.load(id)
+    # return accounts.add(config["wallets"]["from_key"])
 
 
 # # initalizer=box.store, 1
@@ -106,26 +105,4 @@ def get_contract(contract_name):
                 f"brownie run scripts/deploy_mocks.py --network {network.show_active()}"
             )
     return contract
-
-
-
-# def deploy_mocks(decimals=DECIMALS, initial_value=INITIAL_PRICE_FEED_VALUE):
-#     """
-#     Use this script if you want to deploy mocks to a testnet
-#     """
-#     print(f"The active network is {network.show_active()}")
-#     print("Deploying Mocks...")
-#     account = get_account()
-#     print("Deploying Mock Price Feed...")
-#     mock_price_feed = MockV3Aggregator.deploy(
-#         decimals, initial_value, {"from": account}
-#     )
-#     print(f"Deployed to {mock_price_feed.address}")
-#     print("Deploying Mock DAI...")
-#     mock_dai = MockDAI.deploy({"from": account})
-#     print(f"Deployed to {mock_dai.address}")
-#     print("Deploying Mock WETH...")
-#     mock_weth = MockWETH.deploy({"from": account})
-#     print(f"Deployed to {mock_weth.address}")
-#     print("Mocks Deployed!")
 

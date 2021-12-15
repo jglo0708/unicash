@@ -5,41 +5,87 @@ import os
 import yaml
 import json
 from web3 import Web3
+# from random import randint, seed
+import random
 
-# KEPT_BALANCE = Web3.toWei(100, "ether")
+STORE = accounts[0]
 
+UNIVERSITIES = [
+    ["Bocconi", accounts[1]],
+    ["Standford", accounts[2]],
+    ["Harvard", accounts[3]],
+    ["Politecnico", accounts[4]],
 
-def deploy_store():
-    account = get_account(0)
+]
+
+DONORS = [
+    ["Jeff",  accounts[5]],
+    ["Elon",  accounts[6]],
+    ["Richard", accounts[7]],
+]
+
+STUDENTS = [
+    accounts[8],
+    accounts[9],
+]
+
+DESCRIPTIONS = [
+    "Need funding for {} USD".format(random.randint(1000,10000)),
+    "Looking to collect money for Uni",
+    "Looking to funding",
+    "Poor student",
+    "Collection goal:{}".format(random.randint(200000,1000000)),
+]
+
+def deploy_store(account):
     store_charity = StoreCharity.deploy({"from": account},)
-
-    # if update_front_end_flag:
-        # update_front_end()
-
     return store_charity
 
-def create_student_token(owner, uni_address, store, description):
-    student_token = TokenUni.deploy(uni_address, description, store.address, {"from": owner})
-    #
-    # if update_front_end_flag:
-        # update_front_end()
-    return student_token
+def create_student_offers(students, universities, descriptions):
+    student_uni_descriptions = []
+    for student in students:
+        no_of_offers = random.randint(1,4)
+        for offer in range(no_of_offers):
+            uni = universities[random.randint(0, len(universities)-1)][1]
+            desc = descriptions[random.randint(0, len(descriptions)-1)]
+            student_uni_descriptions.append([student, uni, desc])
+    return student_uni_descriptions
 
 
-def validate_student_token():
-    pass
+def add_Unis(store, universities):
+    for uni in universities:
+        store.NewUni(uni[0],{"from": uni[1]})
 
-def make_donation():
-    pass
+def add_Donors(store,donors):
+    for donor in donors:
+        store.NewDonor(donor[0],{"from": donor[1]})
 
-def add_allowed_tokens(token_farm, dict_of_allowed_token, account):
-    for token in dict_of_allowed_token:
-        token_farm.addAllowedTokens(token.address, {"from": account})
-        tx = token_farm.setPriceFeedContract(
-            token.address, dict_of_allowed_token[token], {"from": account}
-        )
-        tx.wait(1)
-    return token_farm
+
+def create_student_token(store, student_offer):
+    return TokenUni.deploy(student_offer[1], student_offer[2], store, {"from": student_offer[0]})
+
+
+def create_unis_donors(store):
+    add_Unis(store, UNIVERSITIES)
+    add_Donors(store, DONORS)
+
+
+def validate_student_tokens(token, unis):
+    for uni in unis:
+        try:
+            if random.random()>0.1: #basic way for not all getting their unis confirmed
+                token.validate({"from": uni[1]})
+            else:
+                continue
+        except:
+            continue
+
+
+def make_donation(token, donor):
+    amt = random.randint(1, 1000)
+    print(amt)
+    token.Donate(amt, {"from":donor[1]})
+
 
 
 def update_front_end():
@@ -82,8 +128,17 @@ def copy_files_to_front_end(src, dest):
         shutil.rmtree(dest)
     shutil.copyfile(src, dest)
 
-
 def main():
-    store = deploy_store()
-    student = get_account(2)
+    store = deploy_store(STORE)
+    create_unis_donors(store)
+    offers = create_student_offers(STUDENTS, UNIVERSITIES, DESCRIPTIONS)
+    for offer in offers:
+        token = create_student_token(store, offer)
+        validate_student_tokens(token, UNIVERSITIES)
+        for donor in DONORS:
+            try:
+                make_donation(token, donor)
+            except:
+                continue
+
     

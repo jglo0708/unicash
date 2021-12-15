@@ -12,7 +12,7 @@ contract StoreCharity {
     address owner; //owner of the address (not particulary useful at the moment)
     uint256 public contracts = 0; //number of users (students issuing CharityToken)
     mapping(address => bool) public contracts_validated; //which contracts have been validated by unis
-    mapping(address => mapping(address => uint256)) donations_per_contracts;
+    mapping(address => mapping(address => uint256)) public donations_per_contracts;
     mapping(address => Contract) public contracts_store; //address is a contract address (because 1 student can have more than 1 address
     mapping(address => address[]) private _store_repayment; //mapping from student to his/her contacts which map to a bool telling if chosen
     address[] private _listOfDonors;
