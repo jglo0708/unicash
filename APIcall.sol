@@ -8,9 +8,11 @@ import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
  * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here: https://docs.chain.link/docs/link-token-contracts/
  */
 
-contract APIcall is ChainlinkClient {
+contract APICall is ChainlinkClient {
     using Chainlink for Chainlink.Request;
 
+    uint256 public exchange_rate;
+    uint256 public test;
     bytes32 public name;
     bytes32 public requestid;
     string public latest_request;
@@ -21,7 +23,6 @@ contract APIcall is ChainlinkClient {
     uint256 private fee;
 
     /**
-     * Set contract owner to b ethe big contract: only them allowed to request the API
      * Network: Kovan
      * Oracle: 0xc57B33452b4F7BB189bB5AfaE9cc4aBa1f7a4FD8 (Chainlink Devrel
      * Node)
@@ -40,7 +41,26 @@ contract APIcall is ChainlinkClient {
      * Create a Chainlink request to retrieve API response, find the target
      * data, then multiply by 1000000000000000000 (to remove decimal places from data).
      */
-    function requestVolumeData(string memory _domain)
+    function requestExchangeRate() public returns (bytes32 requestId) {
+        require(msg.sender == contractowner);
+        Chainlink.Request memory request = buildChainlinkRequest(
+            jobId,
+            address(this),
+            this.fulfillexchange.selector
+        );
+
+        request.add(
+            "get",
+            "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
+        );
+
+        request.add("path", "USD");
+
+        // Sends the request
+        return sendChainlinkRequestTo(oracle, request, fee);
+    }
+
+    function requestUniData(string memory _domain)
         public
         returns (bytes32 requestId)
     {
@@ -48,7 +68,7 @@ contract APIcall is ChainlinkClient {
         Chainlink.Request memory request = buildChainlinkRequest(
             jobId,
             address(this),
-            this.fulfill.selector
+            this.fulfillexchange.selector
         );
 
         // Set the URL to perform the GET request on
@@ -61,6 +81,26 @@ contract APIcall is ChainlinkClient {
         // Set the path to find the desired data in the API response, where the response format is:
         // [{"name": ..., ...}; ...]
         request.add("path", "0.name");
+
+        // Sends the request
+        return sendChainlinkRequestTo(oracle, request, fee);
+    }
+
+    function requestTestData() public returns (bytes32 requestId) {
+        require(msg.sender == contractowner);
+        Chainlink.Request memory request = buildChainlinkRequest(
+            jobId,
+            address(this),
+            this.fulfilltest.selector
+        );
+
+        // Set the URL to perform the GET request on
+        request.add("get", "https://jsonplaceholder.typicode.com/todos/1");
+
+        // Set the path to find the desired data in the API response, where the response format is:
+        // [{"name": ..., ...}; ...]
+        // request.add("path", "0.name");
+        request.add("path", "id");
 
         // Sends the request
         return sendChainlinkRequestTo(oracle, request, fee);
@@ -93,6 +133,22 @@ contract APIcall is ChainlinkClient {
     /**
      * Receive the response in the form of uint256
      */
+    function fulfillexchange(bytes32 _requestId, uint256 _name)
+        public
+        recordChainlinkFulfillment(_requestId)
+    {
+        requestid = _requestId;
+        exchange_rate = _name;
+    }
+
+    function fulfilltest(bytes32 _requestId, uint256 _name)
+        public
+        recordChainlinkFulfillment(_requestId)
+    {
+        requestid = _requestId;
+        test = _name;
+    }
+
     function fulfill(bytes32 _requestId, bytes32 _name)
         public
         recordChainlinkFulfillment(_requestId)
