@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.0;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/access/Ownable.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/math/SafeMath.sol";
@@ -28,7 +28,7 @@ contract TokenUni {
         address payable _uni_address,
         string memory _description,
         address payable _store_address
-    ) {
+    ) public {
         priceFeed = AggregatorV3Interface(
             0x9326BFA02ADD2366b30bacB125260Af641031331
         );
@@ -71,6 +71,7 @@ contract TokenUni {
         uint256 _amount = address(this).balance;
         (bool success, ) = uni_address.call{value: _amount}("");
         require(success, "External Transfer Failed");
+        StoreCharity(address(store_address)).DeleteContract(address(this)); //deletin the contract for the front end
         _destroyToken();
     }
 

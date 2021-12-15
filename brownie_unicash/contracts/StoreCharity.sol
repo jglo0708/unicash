@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.0;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/access/Ownable.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/math/SafeMath.sol";
@@ -22,6 +22,9 @@ contract StoreCharity {
     address[] private _listOfDonors;
     address[] private _listOfUnis;
     address[] private _listOfContracts;
+
+    mapping(address => uint256) public total_donations_per_contract; //total donations for front end dashboard
+    mapping(address => string) public contracts_descriptions; //contarct description fot front end dashboard
 
     struct Contract {
         address payable student_address;
@@ -76,6 +79,7 @@ contract StoreCharity {
         ); //initialize the contract
         _listOfContracts.push(msg.sender);
         _store_repayment[_student_address].push(msg.sender);
+        contracts_descriptions[msg.sender] = _description; //insert the contract with the description inside the mapping for front end
     }
 
     function NewDonor(string memory _description) public {
@@ -100,6 +104,7 @@ contract StoreCharity {
     function StoreDonation(uint256 _value) external {
         donations_per_contracts[tx.origin][msg.sender] += _value;
         donors_store[tx.origin].charity_token_donated += _value;
+        total_donations_per_contract[msg.sender] = address(msg.sender).balance; //change the amount of money donated insiede the mapping for front end
     }
 
     function StoreChoices(address _student_address) external {
@@ -118,6 +123,12 @@ contract StoreCharity {
                 } else {}
             }
         }
+    }
+
+    function DeleteContract(address _address) external {
+        //function to delete the contract inside the mapping for front end
+        delete (total_donations_per_contract[_address]);
+        delete (contracts_descriptions[_address]);
     }
 
     function checkContractBalance() public view returns (uint256) {
