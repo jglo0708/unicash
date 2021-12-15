@@ -68,7 +68,7 @@ contract APICall is ChainlinkClient {
         Chainlink.Request memory request = buildChainlinkRequest(
             jobId,
             address(this),
-            this.fulfillexchange.selector
+            this.fulfill.selector
         );
 
         // Set the URL to perform the GET request on
