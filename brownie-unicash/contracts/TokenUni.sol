@@ -10,14 +10,13 @@ import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src
 
 import "./StoreCharity.sol";
 
-
 contract TokenUni {
     address owner;
     address payable uni_address;
     address payable store_address;
     bool public met_criteria = false;
     bool public chosen = false;
-    
+
     AggregatorV3Interface internal priceFeed;
 
     mapping(address => uint256) public donations_to_this_contract; //mapping from donor to donation amount
@@ -29,9 +28,10 @@ contract TokenUni {
         address payable _uni_address,
         string memory _description,
         address payable _store_address
-        
     ) {
-        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
+        priceFeed = AggregatorV3Interface(
+            0x9326BFA02ADD2366b30bacB125260Af641031331
+        );
         owner = msg.sender;
         uni_address = _uni_address;
         store_address = _store_address;
@@ -52,7 +52,7 @@ contract TokenUni {
     function Donate(uint256 _value) public payable {
         //require donor in donors_store in the big;
         require(met_criteria == true, "Uni has yet to validate this token");
-        require(_value> 0 wei, "You cannot donate 0");
+        require(_value > 0 wei, "You cannot donate 0");
         require(msg.sender.balance >= _value);
         donations_to_this_contract[msg.sender] += _value;
         listOfDonors.push(msg.sender);
@@ -78,35 +78,34 @@ contract TokenUni {
         selfdestruct(payable(uni_address));
     }
 
-
     function _sendBackMoney() external {
         for (uint256 i = 0; i < listOfDonors.length; i++) {
             address payable to = payable(listOfDonors[i]);
-            (bool success, ) = to.call{value: donations_to_this_contract[to]}("");
+            (bool success, ) = to.call{value: donations_to_this_contract[to]}(
+                ""
+            );
             require(success, "External Transfer Failed");
         }
         _destroyToken();
     }
 
-    
-function getPrice() public view returns (int) {
+    function getPrice() public view returns (int256) {
         //(,int256 price,,,) = priceFeed.latestRoundData();
         //return uint256(price);
         (
-            uint80 roundID, 
-            int price,
-            uint startedAt,
-            uint timeStamp,
+            uint80 roundID,
+            int256 price,
+            uint256 startedAt,
+            uint256 timeStamp,
             uint80 answeredInRound
         ) = priceFeed.latestRoundData();
         return price;
     }
-    
-    
-    function getConversionRate(uint256 _amount) public view returns (uint256){
-        uint256 _newInput = _amount * 10 ** 8;
+
+    function getConversionRate(uint256 _amount) public view returns (uint256) {
+        uint256 _newInput = _amount * 10**8;
         //uint256 ethAmountInUsd = _newInput / getPrice();
-        return _newInput;//ethAmountInUsd;
+        return _newInput; //ethAmountInUsd;
     }
 
     function checkContractBalance() public view returns (uint256) {

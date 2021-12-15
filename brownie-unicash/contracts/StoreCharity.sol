@@ -104,9 +104,17 @@ contract StoreCharity {
 
     function StoreChoices(address _student_address) external {
         if (_store_repayment[_student_address].length == 1) {} else {
-            for (uint i=0; i<_store_repayment[_student_address].length; i++) {
-                if (TokenUni(address (_store_repayment[_student_address][i])).chosen() == false) {
-                    TokenUni(address (_store_repayment[_student_address][i]))._sendBackMoney();
+            for (
+                uint256 i = 0;
+                i < _store_repayment[_student_address].length;
+                i++
+            ) {
+                if (
+                    TokenUni(address(_store_repayment[_student_address][i]))
+                        .chosen() == false
+                ) {
+                    TokenUni(address(_store_repayment[_student_address][i]))
+                        ._sendBackMoney();
                 } else {}
             }
         }
