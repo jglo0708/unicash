@@ -35,7 +35,44 @@ Now you can leave `StoreCharity` work in the background: move to ![image](https:
 
 As a student, you own `address_n_2` but no contracts yet. Once you have been accepted to a university program, you can issue a token on the blockchain to get financed: you will need to know the university address and the Big Contract one. The first can be found on the blockchain or the university will provide you with it (in our case, use the stored `address_n_3` and `address_n_4`), for the latter you just need to copy the deployed StoreCharity contract by clicking on the symbol ![image](https://user-images.githubusercontent.com/51834820/146278542-74bd606f-b0e2-4bd3-9455-e65dc574ac25.png) on the right side.
 
-Switching to
+Switching to `address_n_2` of the student, you can now deploy your tokens. Do it twice using the following constructor scheme:
+
+![image](https://user-images.githubusercontent.com/51834820/146279062-888901db-e7eb-479e-b5ae-fd88a6fa01a7.png)
+
+The first time you will feed `address_n_3` of the first university you would like to be financed for, with an explicit description, and the second time you will enter `address_n_4` with another appropriate explanation. In all tokens, the address of the Big Contract should be added  in the `_STORE_ADDRESS` field as well, so to make the student contract interact with the database.
+
+
+### 4. Validate the student contract
+Now the student has 2 tokens! It would be nice to start gathering donations, of course, but this is not possible until the mentioned universities validate the new contracts. Such validation is needed to make further operations on the student contract and it is implemented to certificate that the student has **really** been accepted for a study program in those universities. 
+
+Switch to `address_n_3` and access the related token using the recorded ![image](https://user-images.githubusercontent.com/51834820/146279882-3f2a61d5-dcc4-4361-aee2-d97e6ae370d2.png): validate such application using the button ![image](https://user-images.githubusercontent.com/51834820/146279913-cdd70e8b-0612-46ec-9d63-612ad61ab474.png). Repeat for `address_n_4` on its related student token.
+
+Now both contracts have changed the state of one of their public variable called `met_criteria` to `true`, enabling all sort of operations, like donations and further choice of the student.
+
+
+### 5. Donate
+Each donor has to go to the contract he or she is willing to finance and choose how much to donate: the same amount, in Remix, should be specified as the value of the transaction in ![image](https://user-images.githubusercontent.com/51834820/146280498-dc9bee52-e7de-4913-a6bc-1966a7278098.png) and as the input in the public `Donate` function in ![image](https://user-images.githubusercontent.com/51834820/146280613-8a8a4712-6656-4b21-822e-871e8db5eb25.png). 
+
+Donate from `address_n_-1` and `address_n_-2` to both student contracts choosing an arbitrary amount in Ether. You can always check the summed donations to a student contract using the public function `checkContractBalance` in the list of available functions.
+
+In the StoreCharity now there is a record for each student contract reporting the fact that the student has met the admission criteria required by the uni, as certified by the institution herself, and a list of the donors' addresses mapping to their donation amount. 
+
+
+### 6. Choose the path
+Tokens have been in the wild for a while, so now it is time to reap the benefits of UNICASH! Suppose you are the student and you have to finally decide which university to go to: after having your mind clear, switch to `address_n_2` and oper the token that corresponds to the study program you are going to pursuit. Use the function ![image](https://user-images.githubusercontent.com/51834820/146281778-e386ee15-f85a-4bfe-92e8-c3aa0e390aea.png) to commit your choice (only the owner of the contract can do it!): now everyone on the blockchain knows what path you decided to follow! Another public variable of the contract, `chosen`, has become `true`. A student can have only one `chosen = true` among his or her contracts.
+
+What happens to the other student contracts? Once a student decides to go somewhere else to study, the remaining contracts will automatically activate the `_sendBackMoney` function and each donor will get funded back what he or she transferred! This happens as soon as a student uses the `chooseThisUni` function over a contract. So in the end a donor only funds the study career that the student commits to.
+
+What happens to the money cumulated in the chosen contract?
+
+
+### 7. Fund studies
+In the end, the university related to the chosen contract can finally withdraw the money using the ![image](https://user-images.githubusercontent.com/51834820/146282785-f3c2e322-9b92-4170-bf59-859f949c741f.png) button! We deferred transfer so to give the university the possibility to check the student attendance before accepting financing.
+
+
+
+
+
  
 
 
