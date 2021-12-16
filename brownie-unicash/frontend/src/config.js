@@ -1,10 +1,23 @@
 export const STORE_CHARITY_ADDRESS = '0x3194cBDC3dbcd3E11a07892e7bA5c3394048Cc87'
 
-export const STORE_CHARITY = [
+export const STORE_CHARITY_ABI = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "DeleteContract",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
     "inputs": [
@@ -122,6 +135,25 @@ export const STORE_CHARITY = [
         "type": "address"
       }
     ],
+    "name": "contracts_descriptions",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "contracts_store",
     "outputs": [
       {
@@ -193,6 +225,25 @@ export const STORE_CHARITY = [
       {
         "internalType": "uint256",
         "name": "charity_token_donated",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "total_donations_per_contract",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
         "type": "uint256"
       }
     ],

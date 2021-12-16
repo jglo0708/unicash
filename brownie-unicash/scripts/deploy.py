@@ -4,7 +4,8 @@ import shutil
 import os
 import yaml
 import json
-from web3 import Web3
+import time
+# from web3 import Web3
 # from random import randint, seed
 import random
 
@@ -45,6 +46,7 @@ def create_student_offers(students, universities, descriptions):
     student_uni_descriptions = []
     for student in students:
         no_of_offers = random.randint(1,4)
+
         for offer in range(no_of_offers):
             uni = universities[random.randint(0, len(universities)-1)][1]
             desc = descriptions[random.randint(0, len(descriptions)-1)]
@@ -55,6 +57,7 @@ def create_student_offers(students, universities, descriptions):
 def add_Unis(store, universities):
     for uni in universities:
         store.NewUni(uni[0],{"from": uni[1]})
+        
 
 def add_Donors(store,donors):
     for donor in donors:
@@ -62,7 +65,10 @@ def add_Donors(store,donors):
 
 
 def create_student_token(store, student_offer):
+    print(student_offer[0])
+
     return TokenUni.deploy(student_offer[1], student_offer[2], store, {"from": student_offer[0]})
+    
 
 
 def create_unis_donors(store):
@@ -86,47 +92,6 @@ def make_donation(token, donor):
     print(amt)
     token.Donate(amt, {"from":donor[1]})
 
-
-
-def update_front_end():
-    print("Updating front end...")
-    # The Build
-    copy_folders_to_front_end("./build/contracts", "./front_end/src/chain-info")
-
-    # The Contracts
-    copy_folders_to_front_end("./contracts", "./front_end/src/contracts")
-
-    # The ERC20
-    copy_files_to_front_end(
-        "./build/contracts/dependencies/OpenZeppelin/openzeppelin-contracts@4.3.2/ERC20.json",
-        "./front_end/src/chain-info/ERC20.json",
-    )
-    # The Map
-    copy_files_to_front_end(
-        "./build/deployments/map.json",
-        "./front_end/src/chain-info/map.json",
-    )
-
-    # The Config, converted from YAML to JSON
-    with open("brownie-config.yaml", "r") as brownie_config:
-        config_dict = yaml.load(brownie_config, Loader=yaml.FullLoader)
-        with open(
-            "./front_end/src/brownie-config-json.json", "w"
-        ) as brownie_config_json:
-            json.dump(config_dict, brownie_config_json)
-    print("Front end updated!")
-
-
-def copy_folders_to_front_end(src, dest):
-    if os.path.exists(dest):
-        shutil.rmtree(dest)
-    shutil.copytree(src, dest)
-
-
-def copy_files_to_front_end(src, dest):
-    if os.path.exists(dest):
-        shutil.rmtree(dest)
-    shutil.copyfile(src, dest)
 
 def main():
     store = deploy_store(STORE)

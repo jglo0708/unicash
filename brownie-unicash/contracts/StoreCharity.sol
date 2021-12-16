@@ -3,21 +3,25 @@ pragma solidity ^0.6.0;
 
 import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/access/Ownable.sol";
 import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/math/SafeMath.sol";
-import "./TokenUni.sol";
 
-// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-// import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.6/vendor/SafeMathChainlink.sol";
+
+import "./TokenUni.sol";
 
 contract StoreCharity {
     address owner; //owner of the address (not particulary useful at the moment)
     uint256 public contracts = 0; //number of users (students issuing CharityToken)
     mapping(address => bool) public contracts_validated; //which contracts have been validated by unis
-    mapping(address => mapping(address => uint256)) public donations_per_contracts;
+    mapping(address => mapping(address => uint256)) donations_per_contracts;
     mapping(address => Contract) public contracts_store; //address is a contract address (because 1 student can have more than 1 address
     mapping(address => address[]) private _store_repayment; //mapping from student to his/her contacts which map to a bool telling if chosen
     address[] private _listOfDonors;
     address[] private _listOfUnis;
     address[] private _listOfContracts;
+
+    mapping(address => uint256) public total_donations_per_contract; //total donations for front end dashboard
+    mapping(address => string) public contracts_descriptions; //contarct description fot front end dashboard
 
     struct Contract {
         address payable student_address;
@@ -72,6 +76,7 @@ contract StoreCharity {
         ); //initialize the contract
         _listOfContracts.push(msg.sender);
         _store_repayment[_student_address].push(msg.sender);
+        contracts_descriptions[msg.sender] = _description; //insert the contract with the description inside the mapping for front end
     }
 
     function NewDonor(string memory _description) public {
@@ -96,22 +101,22 @@ contract StoreCharity {
     function StoreDonation(uint256 _value) external {
         donations_per_contracts[tx.origin][msg.sender] += _value;
         donors_store[tx.origin].charity_token_donated += _value;
+        total_donations_per_contract[msg.sender] = address(msg.sender).balance; //change the amount of money donated insiede the mapping for front end
     }
 
     function StoreChoices(address _student_address) external {
-        for (
-            uint256 i = 0;
-            i < _store_repayment[_student_address].length;
-            i++
-        ) {
-            if (
-                TokenUni(address(_store_repayment[_student_address][i]))
-                    .chosen() == false
-            ) {
-                TokenUni(address(_store_repayment[_student_address][i]))
-                    ._sendBackMoney();
-            } else {}
+        if (_store_repayment[_student_address].length == 1) {} else {
+            for (uint i=0; i<_store_repayment[_student_address].length; i++) {
+                if (TokenUni(address (_store_repayment[_student_address][i])).chosen() == false) {
+                    TokenUni(address (_store_repayment[_student_address][i]))._sendBackMoney();
+                } else {}
+            }
         }
+    }
+
+    function DeleteContract(address _address) external { //function to delete the contract inside the mapping for front end
+        delete(total_donations_per_contract[_address]);
+        delete(contracts_descriptions[_address]);
     }
 
     function checkContractBalance() public view returns (uint256) {
