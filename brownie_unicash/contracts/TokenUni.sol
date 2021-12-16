@@ -20,8 +20,6 @@ contract TokenUni {
     mapping(address => uint256) public donations_to_this_contract; //mapping from donor to donation amount
     address[] public listOfDonors; //list of all donors for this contract
 
-    AggregatorV3Interface internal priceFeed; //using a chainlink interface we will get the price eth/usd
-
     using SafeMath for uint256;
 
     constructor(
@@ -29,9 +27,6 @@ contract TokenUni {
         string memory _description,
         address payable _store_address
     ) public {
-        priceFeed = AggregatorV3Interface(
-            0x9326BFA02ADD2366b30bacB125260Af641031331
-        ); //the chainlink interface to get all the values for eth/usd
         owner = msg.sender; //owner of the contract is the one who makes it
         uni_address = _uni_address;
         store_address = _store_address;
@@ -44,6 +39,7 @@ contract TokenUni {
 
     //function for universities to validate that the student has received an offer
     function validate() external {
+        //can double validate
         require(msg.sender == uni_address, "Only Uni can validate"); //require only uni to do it
         met_criteria = true; //approval that uni validates this contract
         StoreCharity(address(store_address)).StoreValidation(); //store it in the store
@@ -97,24 +93,24 @@ contract TokenUni {
     }
 
     //function to get the price unsing chainlink
-    function getPrice() public view returns (int256) {
-        //(,int256 price,,,) = priceFeed.latestRoundData();
-        //return uint256(price);
-        (
-            uint80 roundID,
-            int256 price,
-            uint256 startedAt,
-            uint256 timeStamp,
-            uint80 answeredInRound
-        ) = priceFeed.latestRoundData();
-        return price;
+    function getPrice() public view returns (uint256) {
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(
+            0x9326BFA02ADD2366b30bacB125260Af641031331
+        );
+        (, int256 answer, , , ) = priceFeed.latestRoundData(); //getting the price of one ETH to USD
+        uint256 convertedAnswer = uint256(answer) * 10**10;
+        return convertedAnswer;
     }
 
     //function to get the conversion rate
-    function getConversionRate(uint256 _amount) public view returns (uint256) {
-        // uint256 _newInput = _amount * 10**8;
-        uint256 ethAmountInUsd = _newInput / getPrice();
-        return _newInput; //ethAmountInUsd;
+    function _getValueUsd(uint256 _amount) private view returns (uint256) {
+        uint256 ethAmountInUsd = (_amount * getPrice()) / (1 * 10**36);
+        return ethAmountInUsd; //ethAmountInUsd;
+    }
+
+    function valueContractUsd() public view returns (uint256) {
+        uint256 contractBalanceUsd = _getValueUsd(address(this).balance);
+        return contractBalanceUsd;
     }
 
     //function to check the balance in the contract
