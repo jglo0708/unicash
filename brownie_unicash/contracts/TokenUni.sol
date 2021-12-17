@@ -93,7 +93,7 @@ contract TokenUni {
     }
 
     //function to get the price unsing chainlink
-    function getPrice() public view returns (uint256) {
+    function _getPrice() private view returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
             0x9326BFA02ADD2366b30bacB125260Af641031331
         );
@@ -104,7 +104,7 @@ contract TokenUni {
 
     //function to get the conversion rate
     function _getValueUsd(uint256 _amount) private view returns (uint256) {
-        uint256 ethAmountInUsd = (_amount * getPrice()) / (1 * 10**36);
+        uint256 ethAmountInUsd = (_amount * _getPrice()) / (1 * 10**36);
         return ethAmountInUsd; //ethAmountInUsd;
     }
 
