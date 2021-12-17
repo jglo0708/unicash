@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/access/Ownable.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/math/SafeMath.sol";
@@ -92,7 +92,7 @@ contract TokenUni {
         _destroyToken(); //at the end we destro the token
     }
 
-    //function to get the price unsing chainlink
+    //function to get the price using chainlink
     function _getPrice() private view returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
             0x9326BFA02ADD2366b30bacB125260Af641031331
@@ -108,6 +108,7 @@ contract TokenUni {
         return ethAmountInUsd; //ethAmountInUsd;
     }
 
+    //function to be called to get the contract balance in USD
     function valueContractUsd() public view returns (uint256) {
         uint256 contractBalanceUsd = _getValueUsd(address(this).balance);
         return contractBalanceUsd;
