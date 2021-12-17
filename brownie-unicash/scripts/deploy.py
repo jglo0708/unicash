@@ -40,11 +40,9 @@ DESCRIPTIONS = [
 
 
 def deploy_store(account):
-
     store_charity = StoreCharity.deploy(
         {"from": account},
     )
-
     return store_charity
 
 
@@ -52,7 +50,6 @@ def create_student_offers(students, universities, descriptions):
     student_uni_descriptions = []
     for student in students:
         no_of_offers = random.randint(1, 4)
-
         for offer in range(no_of_offers):
             uni = universities[random.randint(0, len(universities) - 1)][1]
             desc = descriptions[random.randint(0, len(descriptions) - 1)]
@@ -71,7 +68,6 @@ def add_Donors(store, donors):
 
 
 def create_student_token(store, student_offer):
-    print(student_offer[0])
     student_token = TokenUni.deploy(
         student_offer[1], student_offer[2], store, {"from": student_offer[0]}
     )
@@ -83,24 +79,25 @@ def create_unis_donors(store):
     add_Donors(store, DONORS)
 
 
-def validate_student_tokens(token, unis):
-    for uni in unis:
-        try:
-            if (
-                random.random() > 0.1
-            ):  # basic way for not all getting their unis confirmed
-                token.validate({"from": uni[1]})
-
-            else:
-                continue
-        except:
-            continue
+def validate_student_tokens(token, uni):
+    random_number = random.random()
+    if random_number > 0.01:  # basic way for not all getting their unis confirmed
+        token.validate({"from": uni[1]})
 
 
 def make_donation(token, donor):
     amt = random.randint(1, 1000)
-    print(amt)
-    token.Donate(amt, {"from": donor[1]})
+    tx = token.Donate(amt, {"from": donor[1]})
+    tx.wait(1)
+
+
+def choosing_uni(token, student):
+    token.chooseThisUni({"from": student})
+
+
+def uni_withdraw(token, uni):
+    tx = token.withdraw({"from": uni[1]})
+    tx.wait(1)
 
 
 def main():
@@ -108,13 +105,29 @@ def main():
     create_unis_donors(store)
     offers = create_student_offers(STUDENTS, UNIVERSITIES, DESCRIPTIONS)
 
-    for offer in offers:
+    for offer in offers[:1]:
+        val_tokens = []
+        val_unis = []
+        student = offer[0]
         token = create_student_token(store, offer)
-        validate_student_tokens(token, UNIVERSITIES)
-        for donor in DONORS:
-
+        for uni in UNIVERSITIES:
             try:
-                make_donation(token, donor)
-                tx.wait(1)
+                validate_student_tokens(token, uni)
+                val_tokens.append(token)
+                val_unis.append(uni)
             except:
                 continue
+        for donor in DONORS:
+            try:
+                make_donation(token, donor)
+            except:
+                continue
+
+        assert len(val_tokens) == len(val_unis)
+
+        try:
+            random_int = random.randint(0, len(val_tokens) - 1)
+            choosing_uni(val_tokens[random_int], student)
+            uni_withdraw(val_tokens[random_int], val_unis[random_int])
+        except:
+            continue
