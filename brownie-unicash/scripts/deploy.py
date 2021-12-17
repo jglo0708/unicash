@@ -8,6 +8,7 @@ import time
 # from web3 import Web3
 # from random import randint, seed
 import random
+import time
 
 STORE = accounts[0]
 
@@ -39,7 +40,9 @@ DESCRIPTIONS = [
 ]
 
 def deploy_store(account):
+
     store_charity = StoreCharity.deploy({"from": account},)
+
     return store_charity
 
 def create_student_offers(students, universities, descriptions):
@@ -66,10 +69,9 @@ def add_Donors(store,donors):
 
 def create_student_token(store, student_offer):
     print(student_offer[0])
-
-    return TokenUni.deploy(student_offer[1], student_offer[2], store, {"from": student_offer[0]})
+    student_token = TokenUni.deploy(student_offer[1], student_offer[2], store, {"from": student_offer[0]})
+    return student_token
     
-
 
 def create_unis_donors(store):
     add_Unis(store, UNIVERSITIES)
@@ -81,6 +83,7 @@ def validate_student_tokens(token, unis):
         try:
             if random.random()>0.1: #basic way for not all getting their unis confirmed
                 token.validate({"from": uni[1]})
+                
             else:
                 continue
         except:
@@ -97,12 +100,15 @@ def main():
     store = deploy_store(STORE)
     create_unis_donors(store)
     offers = create_student_offers(STUDENTS, UNIVERSITIES, DESCRIPTIONS)
+
     for offer in offers:
         token = create_student_token(store, offer)
         validate_student_tokens(token, UNIVERSITIES)
         for donor in DONORS:
+
             try:
                 make_donation(token, donor)
+                tx.wait(1)
             except:
                 continue
 

@@ -5,10 +5,10 @@ compiler:
     solc:
         remappings:
          - "@chainlink=smartcontractkit/chainlink-brownie-contracts@1.2.0"
-networks:
-    default: development # the default network that brownie connects to
-    development:
-        cmd_settings:
-            accounts: 20
+# networks:
+#     default: development # the default network that brownie connects to
+#     development:
+#         cmd_settings:
+#             accounts: 20
 
 

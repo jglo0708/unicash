@@ -1,73 +1,82 @@
-import React, { useEffect, useState, Component } from 'react';
 import Web3 from 'web3';
+import * as React from 'react';
+import { styled } from '@mui/material/styles';
+import Container from '@mui/material/Container';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 import { STORE_CHARITY_ADDRESS, STORE_CHARITY_ABI } from './config.js';
 
-class App extends Component {
-  componentWillMount() {
-    this.loadBlockchainData()
-  }
 
-  async loadBlockchainData() {
-    const web3 = new Web3(Web3.givenProvider || "http://localhost:8545")
-    const accounts = await web3.eth.getAccounts()
-    // web3.eth.requestAccounts().then(console.log)
-    this.setState({ account: accounts[0] })
-    // web3.eth.personal.defaultAccount = web3.utils.toChecksumAddress(accounts[0])
-    // web3.eth.personal.unlockAccount(web3.eth.defaultAccount)
-    const store = new web3.eth.Contract(STORE_CHARITY_ABI,STORE_CHARITY_ADDRESS)
-    this.setState({ store })
-    const count = await store.methods.total_donations_per_contract('0x1CEE82EEd89Bd5Be5bf2507a92a755dcF1D8e8dc').call()
-    this.setState({ count })
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: theme.palette.common.black,
+    color: theme.palette.common.white,
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 14,
+  },
+}));
 
-    // for (var i = 8; i <= 9; i++){
-    //   const donation = await store.methods.total_donations_per_contract(accounts[i]).call()
-    //   this.setState({
-    //     donations: [...this.state.donations, donation]
-    //   })
-    // }
-  }
-  
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: theme.palette.action.hover,
+  },
+  // hide last border
+  '&:last-child td, &:last-child th': {
+    border: 0,
+  },
+}));
 
-  constructor(props) {
-    super(props)
-    this.state = {
-      account: '',
-      count: 101,
-      donations: [],
-    }
+function createData(student, university, amount, chosen) {
+  return { student, university, amount, chosen};
 }
+const rows = [
+  createData('0x62eb3361aB5B6282FB63E75E290E3367c74BAD9D', "Bocconi", 30000, "False"),
+  createData('0x62eb3361aB5B6282FB63E75E290E3367c74BAD9D', 'Stanford', 2000, "False"),
+  createData('0xbc8337b84a2a221bCC3c4d2EfF254Fc781E3e8D7', "Harvard", 15000, "False"),
+  createData('0xbc8337b84a2a221bCC3c4d2EfF254Fc781E3e8D7', "Cambridge", 16000, "False"),
+  createData('0xbc8337b84a2a221bCC3c4d2EfF254Fc781E3e8D7', "Harvard", 12000, "True"),
+];
 
-render() {
+
+export default function CustomizedTables() {
   return (
     <div>
-      <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-      
-      </nav>
-      <div className="container-fluid">
-      <h2>Your account: {this.state.account}</h2> 
-      <h1>Store Charity</h1> 
-      <h2>Number of deployed contracts: {this.state.count}</h2> 
-      
-        <div className="row">
-          <main role="main" className="col-lg-12 d-flex justify-content-center">
-            <div id="content">
-              <ul id="donationsList" className="list-unstyled">
-                { this.state.donations.map((donations, key) => {
-                  return(
-                    <div className="taskTemplate" className="checkbox" key={key}>
-                      <label>
-                        <span className="content">{donations}</span>
-                      </label>
-                    </div>
-                  )
-                })}
-              </ul>
-            </div>
-          </main>
-        </div>
-      </div>
+      <h1>Welcome to UniCash Dashboard!</h1> 
+<TableContainer component={Paper}>
+      <Table sx={{ minWidth: 700 }} aria-label="customized table">
+        <TableHead>
+          <TableRow>
+            <StyledTableCell>Store Charity</StyledTableCell>
+            <StyledTableCell align="right">Student</StyledTableCell>
+            <StyledTableCell align="right"> University</StyledTableCell>
+            <StyledTableCell align="right">Already donated ($)</StyledTableCell>
+            <StyledTableCell align="right">University chosen? </StyledTableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((row) => (
+            <StyledTableRow key={row.name}>
+              <StyledTableCell component="th" scope="row">
+                {row.name}
+              </StyledTableCell>
+              <StyledTableCell align="right">{row.student}</StyledTableCell>
+              <StyledTableCell align="right">{row.university}</StyledTableCell>
+              <StyledTableCell align="right">{row.amount}</StyledTableCell>
+              <StyledTableCell align="right">{row.chosen}</StyledTableCell>
+            </StyledTableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
     </div>
-  );
+    
+  
+    
+    );
 }
-}
-export default App;
