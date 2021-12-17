@@ -1,4 +1,3 @@
-# Welcome to UNICASH!
 This guide will make sure you will be able to follow the flow of our infrastructure in a logical and coherent manner. 
 We will deploy our contracts in [Remix - Ethereum IDE](https://remix.ethereum.org/) in our local machine, so please upload **StoreCharity.sol** and **TokenUni.sol** to a new `Workspace`. Once opened, they should look like these: ![image](https://user-images.githubusercontent.com/51834820/146237169-822869b0-ca2f-40d6-9b02-058747007cf5.png)
  and ![image](https://user-images.githubusercontent.com/51834820/146237192-d2ec9c4f-0021-4001-9482-e084b6316951.png).
