@@ -5,21 +5,32 @@ import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
 /**
  * Request testnet LINK and ETH here: https://faucets.chain.link/
- * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here: https://docs.chain.link/docs/link-token-contracts/
  */
 
 contract APICall is ChainlinkClient {
     using Chainlink for Chainlink.Request;
 
+    // set the different public variables
+    // echange rate variable can be fetched from here as well
     uint256 public exchange_rate;
+    // test variable to check the validity of the oracle
     uint256 public test;
+    // bytes32 of the latest university name
     bytes32 public name;
+    // bytes32 to make sure the latest request was processed
     bytes32 public requestid;
+    // string to see what was the latest requested university domain name
     string public latest_request;
-
+    // variable to define the address of the only authorized user
     address private contractowner;
+    // the next 3 values are dependent on the type of oracle and the network.
+    // We use the Kovan test network and a general oracle that can query any API
+    // the specification of the oracle addresses and JobIds can be found in the ChainLink documentation
+    // address of the oracle to call for the job - set to private
     address private oracle;
+    // ID of the job - set to private
     bytes32 private jobId;
+    // amount to pay for the API query - set to private
     uint256 private fee;
 
     /**
@@ -30,11 +41,12 @@ contract APICall is ChainlinkClient {
      * Fee: 0.1 LINK
      */
     constructor(address _contractowner) {
+        //set the authorized user when creating the contract
         contractowner = _contractowner;
         setPublicChainlinkToken();
         oracle = 0xc57B33452b4F7BB189bB5AfaE9cc4aBa1f7a4FD8;
         jobId = "d5270d1c311941d0b08bead21fea7747";
-        fee = 0.1 * 10**18; // (Varies by network and job)
+        fee = 0.1 * 10**18;
     }
 
     /**
@@ -42,18 +54,19 @@ contract APICall is ChainlinkClient {
      * data, then multiply by 1000000000000000000 (to remove decimal places from data).
      */
     function requestExchangeRate() public returns (bytes32 requestId) {
+        // check autorized user
         require(msg.sender == contractowner);
         Chainlink.Request memory request = buildChainlinkRequest(
             jobId,
             address(this),
             this.fulfillexchange.selector
         );
-
+        // setting the get request to get the ethereum to USD exchange rate
         request.add(
             "get",
             "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"
         );
-
+        // fetch the response path in the obtained json response
         request.add("path", "USD");
 
         // Sends the request
@@ -64,6 +77,7 @@ contract APICall is ChainlinkClient {
         public
         returns (bytes32 requestId)
     {
+        // check autorized user
         require(msg.sender == contractowner);
         Chainlink.Request memory request = buildChainlinkRequest(
             jobId,
@@ -71,15 +85,17 @@ contract APICall is ChainlinkClient {
             this.fulfill.selector
         );
 
-        // Set the URL to perform the GET request on
+        // Set the URL to perform the GET request on by merging the base url and the specified domain name
         latest_request = concat_strings(
             "http://universities.hipolabs.com/search?domain=",
             _domain
         );
+        // create the get request with the obtained url
         request.add("get", latest_request);
 
         // Set the path to find the desired data in the API response, where the response format is:
         // [{"name": ..., ...}; ...]
+        // the API returns an array, domain name being unique, we take the first element of the array
         request.add("path", "0.name");
 
         // Sends the request
@@ -87,6 +103,7 @@ contract APICall is ChainlinkClient {
     }
 
     function requestTestData() public returns (bytes32 requestId) {
+        // check autorized user
         require(msg.sender == contractowner);
         Chainlink.Request memory request = buildChainlinkRequest(
             jobId,
@@ -94,18 +111,18 @@ contract APICall is ChainlinkClient {
             this.fulfilltest.selector
         );
 
-        // Set the URL to perform the GET request on
+        // Set the URL to perform the GET request on, here a test API
         request.add("get", "https://jsonplaceholder.typicode.com/todos/1");
 
-        // Set the path to find the desired data in the API response, where the response format is:
-        // [{"name": ..., ...}; ...]
-        // request.add("path", "0.name");
+        // Set the path to find the desired data in the API response,
+        // where the response format is simply an int variable in this case
         request.add("path", "id");
 
         // Sends the request
         return sendChainlinkRequestTo(oracle, request, fee);
     }
 
+    // function used to concatenate the strings to obtain the university url
     function concat_strings(string memory _stringa, string memory _stringb)
         internal
         pure
@@ -114,6 +131,9 @@ contract APICall is ChainlinkClient {
         return string(abi.encodePacked(_stringa, _stringb));
     }
 
+    // when having issues with the bytes32 format of the university API return,
+    // an attempt was made to change the return into a string format.
+    // This was unsuccessful. We do keep the function should it prove useful in a future solution
     function bytes32ToString(bytes32 _bytes32)
         public
         pure
@@ -130,25 +150,27 @@ contract APICall is ChainlinkClient {
         return string(bytesArray);
     }
 
-    /**
-     * Receive the response in the form of uint256
-     */
-    function fulfillexchange(bytes32 _requestId, uint256 _name)
+    // callback function to receive the exchange rate response in the form of uint256
+    function fulfillexchange(bytes32 _requestId, uint256 _rate)
         public
         recordChainlinkFulfillment(_requestId)
     {
         requestid = _requestId;
-        exchange_rate = _name;
+        // we multiply the exchange rate by 1000000000000000000 to remove the decimals
+        exchange_rate = _rate * 10**18;
     }
 
-    function fulfilltest(bytes32 _requestId, uint256 _name)
+    // callback function to receive the test response in the form of uint256
+    function fulfilltest(bytes32 _requestId, uint256 _test)
         public
         recordChainlinkFulfillment(_requestId)
     {
         requestid = _requestId;
-        test = _name;
+        test = _test;
     }
 
+    // callback function to receive the university response in the form of a bytes32
+    // might want to implement the bytes_to_string function later on
     function fulfill(bytes32 _requestId, bytes32 _name)
         public
         recordChainlinkFulfillment(_requestId)
@@ -156,6 +178,4 @@ contract APICall is ChainlinkClient {
         requestid = _requestId;
         name = _name;
     }
-
-    // function withdrawLink() external {} - Implement a withdraw function to avoid locking your LINK in the contract
 }
