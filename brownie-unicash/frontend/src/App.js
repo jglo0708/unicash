@@ -48,11 +48,11 @@ export default function CustomizedTables() {
   return (
     <div>
       <h1>Welcome to UniCash Dashboard!</h1> 
-<TableContainer component={Paper}>
-      <Table sx={{ minWidth: 700 }} aria-label="customized table">
+      <div>
+      <TableContainer component={Paper}>
+      <Table  aria-label="customized table">
         <TableHead>
           <TableRow>
-            <StyledTableCell>Store Charity</StyledTableCell>
             <StyledTableCell align="right">Student</StyledTableCell>
             <StyledTableCell align="right"> University</StyledTableCell>
             <StyledTableCell align="right">Already donated ($)</StyledTableCell>
@@ -61,10 +61,7 @@ export default function CustomizedTables() {
         </TableHead>
         <TableBody>
           {rows.map((row) => (
-            <StyledTableRow key={row.name}>
-              <StyledTableCell component="th" scope="row">
-                {row.name}
-              </StyledTableCell>
+            <StyledTableRow key={row.student}>
               <StyledTableCell align="right">{row.student}</StyledTableCell>
               <StyledTableCell align="right">{row.university}</StyledTableCell>
               <StyledTableCell align="right">{row.amount}</StyledTableCell>
@@ -74,6 +71,8 @@ export default function CustomizedTables() {
         </TableBody>
       </Table>
     </TableContainer>
+      </div>
+      
     </div>
     
   
