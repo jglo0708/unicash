@@ -8,6 +8,7 @@ import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src
 import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/vendor/SafeMathChainlink.sol";
 
 import "./TokenUni.sol";
+import "./APIcall.sol";
 
 contract StoreCharity {
     mapping(address => bool) public contracts_validated; //which contracts have been validated by unis
@@ -19,6 +20,10 @@ contract StoreCharity {
     address[] private _listOfDonors; //list of all donors
     address[] private _listOfUnis; //list of all unis
     address[] private _listOfContracts; //list of all contracts
+
+    //we store the api contract for fetching uni validation
+    // currently commented as the api cll doesn't work
+    //APICall private api;
 
     using SafeMath for uint256;
 
@@ -54,6 +59,9 @@ contract StoreCharity {
 
     constructor() public {
         owner = msg.sender; //the guy who create the ontract becames the owner
+        //we create the api contract
+        //currently commented because the function doesn't work yet
+        //api = new APICall(address(this))
     }
 
     function NewContract(
@@ -95,9 +103,42 @@ contract StoreCharity {
 
     //we define what happens when we create a new uni
     function NewUni(string memory _uni_name) public {
-        universities++; //increase number of universities
+        APIcall(_apiContract).universities++; //increase number of universities
         uni_store[msg.sender] = University(_uni_name); //initialize the uni
         _listOfUnis.push(msg.sender); //add uni to list of donors
+    }
+
+    /*
+    //what happens when we create a new uni WITH THE API CHECK LOGIC
+    // THIS FUNCTION DOES NOT YET WORK
+    function NewUni(string memory _uni_name, string memory _uni_domain) public {
+        // we first call the API to request the university validation
+        APIcall(_apiContract).requestUniData(_uni_domain);
+        // we fetch the university name stored in the API contract
+        string memory _api_uni_name = APIcall(_apiContract).name;
+        // if the query returned an empty string, the university isn't valid and the function reverts
+        if(_api_uni_name == "") {
+            revert("The university wasn't found.")
+        } else if(_uni_name != _api_uni_name) {
+            // if the names don't match, the function reverts 
+            string _msg = concat_strings("The university name wasn't valid. Did you mean ", _api_uni_name)
+            revert(_msg)
+        } else {
+            // otherwise, the creation of the university proceeds as usual
+            universities++; //increase number of universities
+            uni_store[msg.sender] = University(_uni_name); //initialize the uni
+            _listOfUnis.push(msg.sender); //add uni to list of donors
+        }
+    }
+    */
+
+    // function used to concatenate the strings
+    function concat_strings(string memory _stringa, string memory _stringb)
+        internal
+        pure
+        returns (string memory req)
+    {
+        return string(abi.encodePacked(_stringa, _stringb));
     }
 
     //we define if the contracts are validated to the store

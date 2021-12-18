@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
@@ -16,7 +16,7 @@ contract APICall is ChainlinkClient {
     // test variable to check the validity of the oracle
     uint256 public test;
     // bytes32 of the latest university name
-    bytes32 public name;
+    string public name;
     // bytes32 to make sure the latest request was processed
     bytes32 public requestid;
     // string to see what was the latest requested university domain name
@@ -134,6 +134,7 @@ contract APICall is ChainlinkClient {
     // when having issues with the bytes32 format of the university API return,
     // an attempt was made to change the return into a string format.
     // This was unsuccessful. We do keep the function should it prove useful in a future solution
+    // and because having the university name as string is convenient
     function bytes32ToString(bytes32 _bytes32)
         public
         pure
@@ -176,6 +177,6 @@ contract APICall is ChainlinkClient {
         recordChainlinkFulfillment(_requestId)
     {
         requestid = _requestId;
-        name = _name;
+        name = bytes32ToString(_name);
     }
 }
