@@ -2,6 +2,7 @@
 
 pragma solidity ^0.6.0;
 
+
 // import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/access/Ownable.sol";
 // import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/math/SafeMath.sol";
 
@@ -16,6 +17,7 @@ import "@chainlink/contracts/src/v0.6/vendor/SafeMathChainlink.sol";
 
 import "./StoreCharity.sol";
 
+
 contract TokenUni {
     address owner; //this is the owner of the contract
     address payable uni_address; //this is the uni (eth address) who will execute the contract
@@ -26,20 +28,24 @@ contract TokenUni {
     mapping(address => uint256) public donations_to_this_contract; //mapping from donor to donation amount
     address[] public listOfDonors; //list of all donors for this contract
 
+
     using SafeMath for uint256;
 
     constructor(
         address payable _uni_address,
         string memory _description,
         address payable _store_address
+
     ) public {
         owner = msg.sender; //owner of the contract is the one who makes it
+
         uni_address = _uni_address;
         store_address = _store_address;
         StoreCharity(address(_store_address)).NewContract(
             payable(msg.sender),
             _uni_address,
             _description
+
         ); //store it in the store
     }
 
@@ -81,6 +87,7 @@ contract TokenUni {
     }
 
     //function to destroy the token once is it no longer valid
+
     function _destroyToken() private {
         selfdestruct(payable(uni_address));
     }
@@ -121,6 +128,7 @@ contract TokenUni {
     }
 
     //function to check the balance in the contract
+
     function checkContractBalance() public view returns (uint256) {
         return address(this).balance;
     }

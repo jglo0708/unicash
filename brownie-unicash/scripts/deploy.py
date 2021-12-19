@@ -74,6 +74,7 @@ def create_student_token(store, student_offer):
     return student_token
 
 
+
 def create_unis_donors(store):
     add_Unis(store, UNIVERSITIES)
     add_Donors(store, DONORS)
@@ -90,9 +91,15 @@ def make_donation(token, donor):
     tx = token.Donate(amt, {"from": donor[1]})
     tx.wait(1)
 
+def make_donation(token, donor):
+    amt = random.randint(1, 1000)
+    print(amt)
+    token.Donate(amt, {"from":donor[1]})
+
 
 def choosing_uni(token, student):
     token.chooseThisUni({"from": student})
+
 
 
 def uni_withdraw(token, uni):
@@ -131,3 +138,4 @@ def main():
             uni_withdraw(val_tokens[random_int], val_unis[random_int])
         except:
             continue
+

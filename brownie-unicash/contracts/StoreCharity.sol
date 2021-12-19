@@ -16,6 +16,7 @@ import "@chainlink/contracts/src/v0.6/vendor/SafeMathChainlink.sol";
 import "./TokenUni.sol";
 import "./APIcall.sol";
 
+
 contract StoreCharity {
     mapping(address => bool) public contracts_validated; //which contracts have been validated by unis
     mapping(address => mapping(address => uint256)) donations_per_contracts;
@@ -33,10 +34,12 @@ contract StoreCharity {
 
     using SafeMath for uint256;
 
+
     mapping(address => Contract) public contracts_store; //address is a contract address (because 1 student can have more than 1 address
     uint256 public contracts = 0; //number of users (students issuing CharityToken)
 
     //creating a structure to create student university contracts
+    
     struct Contract {
         address payable student_address; //this is the student (eth address) who will execute the contract
         address payable uni_address; //this is the university (eth address) which the student will execute the contract with
@@ -162,6 +165,7 @@ contract StoreCharity {
     //we define the final choice made by the student
     function StoreChoices(address _student_address) external {
         if (_store_repayment[_student_address].length == 1) {} else {
+
             for (
                 uint256 i = 0;
                 i < _store_repayment[_student_address].length;
@@ -173,10 +177,12 @@ contract StoreCharity {
                 ) {
                     TokenUni(address(_store_repayment[_student_address][i]))
                         ._sendBackMoney(); //we send the money back to the other universities if that university is not chosen
+
                 } else {}
             }
         }
     }
+
 
     //function to delete the contract inside the mapping for front end
     function DeleteContract(address _address) external {
