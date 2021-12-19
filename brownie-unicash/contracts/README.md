@@ -24,6 +24,8 @@ You will see a lot of available functions to be called, as the majority of them 
 
 In order to register as a university, switch to `address_n_3` (or `address_n_4`, ...) and feed in your name, e.g. "Bocconi", in ![image](https://user-images.githubusercontent.com/51834820/146243190-89cb9a8b-1e9d-47b4-bbbe-6e907f3b737d.png) and press the button. You can do this process as many times you want, using as many accounts you wish, in order to register several universities.
 
+In the final working version of the contracts, universities will register using their domain name, university name and account address. The former two will be checked against the values returned by an external API to check the vality of the university. Further details about this can be found in the final section of this READme.
+
 A donor can register analogously, by switching to `address_n_-1` (or `address_n_-2`, ...) and writing his or her name in `NewDonor`, then clicking on ![image](https://user-images.githubusercontent.com/51834820/146243717-e5b29625-b7d6-4172-8288-75cdc31229e8.png).
 
 For this demo, just add two universities using `address_n_3` and `address_n_4` and two donors using `address_n_-1` and `address_n_-2`.
@@ -68,11 +70,12 @@ What happens to the money cumulated in the chosen contract?
 ### 7. Fund studies
 In the end, the university related to the chosen contract can finally withdraw the money using the ![image](https://user-images.githubusercontent.com/51834820/146282785-f3c2e322-9b92-4170-bf59-859f949c741f.png) button! We deferred transfer so to give the university the possibility to check the student attendance before accepting financing.
 
+### 8. Oracles
+A final contract will be used in order to obtain the university validation. It will allow to connect to an oracle and fetch APIs through ChainLink. Because of issues with the return type of the functions, the contract is not yet implemented. However, all the functions exist and have been added and commented in the solidity files. 
 
+The main file for the API contract is APICall.sol. Once implemented, the main user that deploys the StoreContract will also need to send funding (ETH and LINK) to this contract in order to ensure that the queries can be run.
+The files contains 3 main functionalities: fetching the university name from the university domain (resquestUniData), store in variable name, fetching the ETH to USD exchage rate (resquestExchangeRate - this is implemented in the big contract as well but was kapt to serve as potential backup) stored in variable exchange_rate, and a test function to check the validity of the JobID and oracle address (resquestTestData). These last two elements are defined depending on the type of function and the test network used, and should be changed accordingly, and therefore this test function allows to check the proper functioning of these two elements. 
 
+In order to obtain the university name from the domain name (chosen as it is a unique identifier of the universities), the API http://universities.hipolabs.com/ is used. The base url is joined with the provided domain name using the function concat_strings. The request is made and the path to the value of interest is defined (the result comes as an array, from which we want to select the first element and retrieve the 'name' field). The value of the variable name is then set in the fulfill callback function, which transforms the bytes32 into a string (by calling the bytes32ToString function) and returns it.
 
-
- 
-
-
-
+This process implies initiating a value in the StoreCharity.sol code to store the API contract (in lines 31 to 33). In the constructor, the API contract is initiated, and the address of the StoreContract is set as authorized user (lines 71 to 63). The function NewUni is adapted to account for the API call (lines 120 to 142). The first step is calling the function requestUniData from the APICall contract with the provided domain name. The resulting name is stored in memory. If the string returned is empty (i.e. if the query didn't return any result), the function NewUni reverts as the domain wasn't found by the API. If the name is returned, it is then checked against the name provided by the university, in order to ensure that the data provided is accurate and not misleading or confusing. If the two names do not match, the function reverts and provides as a suggestion the name returned by the API. If the names match, the function creates the university as done previously.
