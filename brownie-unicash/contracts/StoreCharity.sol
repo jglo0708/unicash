@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.6.0;
 
+// import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/access/Ownable.sol";
+// import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.1.0/contracts/math/SafeMath.sol";
+
+// import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
+// import "https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/vendor/SafeMathChainlink.sol";
+
 import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/access/Ownable.sol";
 import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/math/SafeMath.sol";
 
@@ -8,48 +14,63 @@ import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 import "@chainlink/contracts/src/v0.6/vendor/SafeMathChainlink.sol";
 
 import "./TokenUni.sol";
+import "./APIcall.sol";
+
 
 contract StoreCharity {
-    address owner; //owner of the address (not particulary useful at the moment)
-    uint256 public contracts = 0; //number of users (students issuing CharityToken)
     mapping(address => bool) public contracts_validated; //which contracts have been validated by unis
     mapping(address => mapping(address => uint256)) donations_per_contracts;
-    mapping(address => Contract) public contracts_store; //address is a contract address (because 1 student can have more than 1 address
     mapping(address => address[]) private _store_repayment; //mapping from student to his/her contacts which map to a bool telling if chosen
-    address[] private _listOfDonors;
-    address[] private _listOfUnis;
-    address[] private _listOfContracts;
-
     mapping(address => uint256) public total_donations_per_contract; //total donations for front end dashboard
     mapping(address => string) public contracts_descriptions; //contarct description fot front end dashboard
 
+    address[] private _listOfDonors; //list of all donors
+    address[] private _listOfUnis; //list of all unis
+    address[] private _listOfContracts; //list of all contracts
+
+    //we store the api contract for fetching uni validation
+    // currently commented as the api cll doesn't work
+    //APICall private api;
+
+    using SafeMath for uint256;
+
+
+    mapping(address => Contract) public contracts_store; //address is a contract address (because 1 student can have more than 1 address
+    uint256 public contracts = 0; //number of users (students issuing CharityToken)
+
+    //creating a structure to create student university contracts
+    
     struct Contract {
-        address payable student_address;
-        address payable uni_address;
-        string description;
+        address payable student_address; //this is the student (eth address) who will execute the contract
+        address payable uni_address; //this is the university (eth address) which the student will execute the contract with
+        string description; //this is the name of the university
     }
 
-    mapping(address => Donor) public donors_store;
-    uint256 public donors = 0;
-    uint256 initial_CharityTokens_donated = 0;
+    mapping(address => Donor) public donors_store; //donor has an adress
+    uint256 public donors = 0; //we initialize with 0 donors
+    uint256 initial_CharityTokens_donated = 0; //number of charity token donated
 
+    //creating a structure to create donors
     struct Donor {
-        //student class
         string description; //"I am This Guy" / "This company"
         uint256 charity_token_donated; //tokens issued
     }
 
-    mapping(address => University) public uni_store;
-    uint256 public universities = 0;
+    mapping(address => University) public uni_store; //university has an adress
+    uint256 public universities = 0; //we initialize with 0 universities
 
+    //creating a structure to create universities
     struct University {
-        string uni_name;
+        string uni_name; //the university address
     }
 
-    using SafeMath for uint256;
+    address owner; //owner of the address (not particulary useful at the moment)
 
     constructor() public {
         owner = msg.sender; //the guy who create the ontract becames the owner
+        //we create the api contract
+        //currently commented because the function doesn't work yet
+        //api = new APICall(address(this))
     }
 
     function NewContract(
@@ -79,46 +100,97 @@ contract StoreCharity {
         contracts_descriptions[msg.sender] = _description; //insert the contract with the description inside the mapping for front end
     }
 
+    //we define what happens when we create a new donor
     function NewDonor(string memory _description) public {
         donors++; //increase the number of users
         donors_store[msg.sender] = Donor(
             _description,
             initial_CharityTokens_donated
         ); //initialize the Donor
-        _listOfDonors.push(msg.sender);
+        _listOfDonors.push(msg.sender); //add donor to list of donors
     }
 
+    //we define what happens when we create a new uni
     function NewUni(string memory _uni_name) public {
-        universities++;
-        uni_store[msg.sender] = University(_uni_name);
-        _listOfUnis.push(msg.sender);
+        APIcall(_apiContract).universities++; //increase number of universities
+        uni_store[msg.sender] = University(_uni_name); //initialize the uni
+        _listOfUnis.push(msg.sender); //add uni to list of donors
     }
 
+    /*
+    //what happens when we create a new uni WITH THE API CHECK LOGIC
+    // THIS FUNCTION DOES NOT YET WORK
+    function NewUni(string memory _uni_name, string memory _uni_domain) public {
+        // we first call the API to request the university validation
+        APIcall(_apiContract).requestUniData(_uni_domain);
+        // we fetch the university name stored in the API contract
+        string memory _api_uni_name = APIcall(_apiContract).name;
+        // if the query returned an empty string, the university isn't valid and the function reverts
+        if(_api_uni_name == "") {
+            revert("The university wasn't found.")
+        } else if(_uni_name != _api_uni_name) {
+            // if the names don't match, the function reverts 
+            string _msg = concat_strings("The university name wasn't valid. Did you mean ", _api_uni_name)
+            revert(_msg)
+        } else {
+            // otherwise, the creation of the university proceeds as usual
+            universities++; //increase number of universities
+            uni_store[msg.sender] = University(_uni_name); //initialize the uni
+            _listOfUnis.push(msg.sender); //add uni to list of donors
+        }
+    }
+    */
+
+    // function used to concatenate the strings
+    function concat_strings(string memory _stringa, string memory _stringb)
+        internal
+        pure
+        returns (string memory req)
+    {
+        return string(abi.encodePacked(_stringa, _stringb));
+    }
+
+    //we define if the contracts are validated to the store
     function StoreValidation() external {
         contracts_validated[msg.sender] = true;
     }
 
+    //we define what donations have been made to the store
     function StoreDonation(uint256 _value) external {
         donations_per_contracts[tx.origin][msg.sender] += _value;
         donors_store[tx.origin].charity_token_donated += _value;
         total_donations_per_contract[msg.sender] = address(msg.sender).balance; //change the amount of money donated insiede the mapping for front end
     }
 
+    //we define the final choice made by the student
     function StoreChoices(address _student_address) external {
         if (_store_repayment[_student_address].length == 1) {} else {
-            for (uint i=0; i<_store_repayment[_student_address].length; i++) {
-                if (TokenUni(address (_store_repayment[_student_address][i])).chosen() == false) {
-                    TokenUni(address (_store_repayment[_student_address][i]))._sendBackMoney();
+
+            for (
+                uint256 i = 0;
+                i < _store_repayment[_student_address].length;
+                i++
+            ) {
+                if (
+                    TokenUni(address(_store_repayment[_student_address][i]))
+                        .chosen() == false
+                ) {
+                    TokenUni(address(_store_repayment[_student_address][i]))
+                        ._sendBackMoney(); //we send the money back to the other universities if that university is not chosen
+
                 } else {}
             }
         }
     }
 
-    function DeleteContract(address _address) external { //function to delete the contract inside the mapping for front end
-        delete(total_donations_per_contract[_address]);
-        delete(contracts_descriptions[_address]);
+
+    //function to delete the contract inside the mapping for front end
+    function DeleteContract(address _address) external {
+        delete (total_donations_per_contract[_address]);
+        delete (contracts_descriptions[_address]);
     }
 
+    //function to check the balance in the contract
     function checkContractBalance() public view returns (uint256) {
         return address(this).balance;
     }

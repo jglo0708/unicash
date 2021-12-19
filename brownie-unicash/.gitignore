@@ -5,3 +5,4 @@ __pycache__
 build/
 reports/
 scripts/helpful_scripts.py
+.DS_Store
