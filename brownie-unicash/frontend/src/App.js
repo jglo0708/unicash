@@ -1,7 +1,6 @@
-import Web3 from 'web3';
 import * as React from 'react';
 import { styled } from '@mui/material/styles';
-import Container from '@mui/material/Container';
+
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
@@ -9,7 +8,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { STORE_CHARITY_ADDRESS, STORE_CHARITY_ABI } from './config.js';
+
 
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -53,19 +52,19 @@ export default function CustomizedTables() {
       <Table  aria-label="customized table">
         <TableHead>
           <TableRow>
-            <StyledTableCell align="right">Student</StyledTableCell>
-            <StyledTableCell align="right"> University</StyledTableCell>
-            <StyledTableCell align="right">Already donated ($)</StyledTableCell>
-            <StyledTableCell align="right">University chosen? </StyledTableCell>
+            <StyledTableCell align="left">Student</StyledTableCell>
+            <StyledTableCell align="left"> University</StyledTableCell>
+            <StyledTableCell align="left">Already donated ($)</StyledTableCell>
+            <StyledTableCell align="left">University chosen? </StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {rows.map((row) => (
             <StyledTableRow key={row.student}>
-              <StyledTableCell align="right">{row.student}</StyledTableCell>
-              <StyledTableCell align="right">{row.university}</StyledTableCell>
-              <StyledTableCell align="right">{row.amount}</StyledTableCell>
-              <StyledTableCell align="right">{row.chosen}</StyledTableCell>
+              <StyledTableCell align="left">{row.student}</StyledTableCell>
+              <StyledTableCell align="left">{row.university}</StyledTableCell>
+              <StyledTableCell align="left">{row.amount}</StyledTableCell>
+              <StyledTableCell align="left">{row.chosen}</StyledTableCell>
             </StyledTableRow>
           ))}
         </TableBody>
