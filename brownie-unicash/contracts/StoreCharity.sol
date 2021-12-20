@@ -112,7 +112,8 @@ contract StoreCharity {
 
     //we define what happens when we create a new uni
     function NewUni(string memory _uni_name) public {
-        APIcall(_apiContract).universities++; //increase number of universities
+        universities++; //increase number of universities
+        // APIcall(_apiContract).universities++; 
         uni_store[msg.sender] = University(_uni_name); //initialize the uni
         _listOfUnis.push(msg.sender); //add uni to list of donors
     }

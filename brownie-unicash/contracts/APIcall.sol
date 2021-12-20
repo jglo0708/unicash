@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.0;
 
-import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
 
 /**
  * Request testnet LINK and ETH here: https://faucets.chain.link/
@@ -40,7 +40,7 @@ contract APICall is ChainlinkClient {
      * Job ID: d5270d1c311941d0b08bead21fea7747
      * Fee: 0.1 LINK
      */
-    constructor(address _contractowner) {
+    constructor(address _contractowner) public {
         //set the authorized user when creating the contract
         contractowner = _contractowner;
         setPublicChainlinkToken();

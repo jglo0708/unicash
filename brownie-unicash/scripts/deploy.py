@@ -5,8 +5,6 @@ import yaml
 import json
 import time
 
-# from web3 import Web3
-# from random import randint, seed
 import random
 import time
 
@@ -28,6 +26,11 @@ DONORS = [
 STUDENTS = [
     accounts[8],
     accounts[9],
+    accounts[10],
+    accounts[11],
+    accounts[12],
+    accounts[13],
+    accounts[14],
 ]
 
 DESCRIPTIONS = [

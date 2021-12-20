@@ -14,7 +14,6 @@ import "OpenZeppelin/openzeppelin-contracts@3.1.0/contracts/math/SafeMath.sol";
 
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 import "@chainlink/contracts/src/v0.6/vendor/SafeMathChainlink.sol";
-
 import "./StoreCharity.sol";
 
 
