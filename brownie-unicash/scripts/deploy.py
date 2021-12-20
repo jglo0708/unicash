@@ -94,11 +94,6 @@ def make_donation(token, donor):
     tx = token.Donate(amt, {"from": donor[1]})
     tx.wait(1)
 
-def make_donation(token, donor):
-    amt = random.randint(1, 1000)
-    print(amt)
-    token.Donate(amt, {"from":donor[1]})
-
 
 def choosing_uni(token, student):
     token.chooseThisUni({"from": student})
